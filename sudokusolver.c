@@ -70,9 +70,7 @@ int valid_move(char new_number, char **grid, int row, int col)
             return 0;
     }
 
-    // Calculate correct grid bounds
-    // row % 3 and col % 3
-    // [7][8] row upper = 3, col upper = 6, row lower = 0, col lower = 3, row = 1, col = 5
+    // Calculate correct 3x3 grid bounds
     row_lower_bound = (row / 3) * 3;
     col_lower_bound = (col / 3) * 3;
     row_upper_bound = row_lower_bound + 3;
@@ -93,7 +91,7 @@ int valid_move(char new_number, char **grid, int row, int col)
 
 }
 
-// Returns the first empty cell in col
+// Returns the first empty cell in the column, if no empty cells, returns 9
 int first_empty(char **grid, int col) 
 {
     int i;
@@ -122,15 +120,12 @@ int solver_helper(char **grid, int col)
     if (finished(grid))
         return 1;
     
-    // Bring the col back down if greater than 8
+    // Bring the column back down to 0 if greater than 8
     if (col > 8)
         col = 0;
-    // Determine the current row based on the column
+
+    // Determine the current row based on the first empty cell in the column
     row = first_empty(grid, col);
-
-    //printf("First empty in %d is %d\n", col, row);
-
-    //exit(1);
 
     // If the current column is full, skip to next column
     if (row == 9)
@@ -144,35 +139,28 @@ int solver_helper(char **grid, int col)
         new_num = options[i];
 
         // Check the validity of the potential move
-        if (!valid_move(new_num, grid, row, col)) 
-        {
-            //printf("FAIL: %c in [%d][%d]\n", new_num, row, col);
+        if (!valid_move(new_num, grid, row, col))
             continue;
-        }   
             
-
         // Change state
         grid[row][col] = new_num;
-
-        //printf("Trying [%d][%d] as %c\n", row, col, new_num);
 
         // Perform recursive descent
         if (solver_helper(grid, col + 1))
             return 1;
 
-        // Revert state
-        //printf("Reverting [%d][%d] to EMPTY\n", row, col);
+        // Revert state upon failure of recursive descent
         grid[row][col] = EMPTY;
 
         print_grid(grid);
 
-        
     }
 
     return 0;
 
 }
 
+// Calls the actual solver function with the correct starting column parameter (0)
 int solver(char **grid) 
 {
     return solver_helper(grid, 0);
@@ -192,10 +180,7 @@ int main(int argc, char **argv)
 
     grid = read_grid(argv[1], grid);
 
-    //printf(">>%d<<\n", valid_move(3, grid, 0, 0));
-
     m = solver(grid);
-
 
     return 0;
 }
